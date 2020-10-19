@@ -1,6 +1,7 @@
 package com.jimmy.tracking_expenses;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -62,8 +63,8 @@ public class ViewStockActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(ViewStockActivity.this, AddStockActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -211,6 +212,7 @@ public class ViewStockActivity extends AppCompatActivity {
             table.setTableData(tableData);
 
             TableConfig();
+            table.setSortColumn(categoryColumn,false);
             progressBar.dismiss();
 
         }
