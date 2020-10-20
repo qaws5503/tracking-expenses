@@ -1,6 +1,7 @@
 package com.jimmy.tracking_expenses;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -24,6 +26,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.jakewharton.rxbinding4.widget.RxSearchView;
 import com.jimmy.tracking_expenses.StockDataBase.DataBase;
 
 import org.json.JSONArray;
@@ -32,6 +35,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.functions.Consumer;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -92,6 +99,19 @@ public class BuyStockFragment extends Fragment {
         tv_stockSymbol = v.findViewById(R.id.textViewStockSymbol);
         Button bt_cancel = v.findViewById(R.id.buttonCancel);
         Button bt_add = v.findViewById(R.id.buttonAdd);
+        ed_stockPrice = v.findViewById(R.id.editTextStockPrice);
+        ed_stockShares = v.findViewById(R.id.editTextStockShares);
+
+        Spinner spinner = v.findViewById(R.id.spinner);
+        ArrayList arrayList = new ArrayList<String>();
+
+        arrayList.add("金融");
+        arrayList.add("科技");
+        arrayList.add("傳統");
+
+        ArrayAdapter adapter = new  ArrayAdapter(getContext()
+                ,android.R.layout.simple_dropdown_item_1line,arrayList);
+        spinner.setAdapter(adapter);
 
         bt_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,14 +124,17 @@ public class BuyStockFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 new Thread(()->{
-                    String category = "";
+                    String category = spinner.getSelectedItem().toString();;
                     String name = tv_stockSymbol.getText().toString();
                     String account = "";
-                    //float buyPrice = Float.parseFloat(ed_stockPrice.getText().toString());
-                    //float buyShares = Float.parseFloat(ed_stockShares.getText().toString());
-                    //float total = buyPrice*buyShares;
-                    //DataBase.getInstance(getActivity()).getDataUao().insertData(category,name,buyShares,buyPrice,total,account);
+                    Log.i("ed",ed_stockPrice.getText().toString());
+                    float buyPrice = Float.parseFloat(ed_stockPrice.getText().toString());
+                    float buyShares = Float.parseFloat(ed_stockShares.getText().toString());
+                    float total = buyPrice*buyShares;
+                    DataBase.getInstance(getActivity()).getDataUao().insertData(category,name,buyShares,buyPrice,total,account);
                     getActivity().finish();
+                    Intent intent = new Intent(getContext(),ViewStockActivity.class);
+                    startActivity(intent);
                 }).start();
             }
         });
@@ -132,64 +155,52 @@ public class BuyStockFragment extends Fragment {
                 SearchView searchView = customLayout.findViewById(R.id.search_view);
                 searchView.setQueryHint("Search...");
                 searchView.setIconifiedByDefault(false);
-                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return false;
-                    }
+                RxSearchView.queryTextChanges(searchView)
+                        .debounce(500, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<CharSequence>() {
+                            @Override
+                            public void accept(CharSequence charSequence) throws Throwable {
+                                String newText = charSequence.toString();
+                                if (newText != null) {
+                                    String url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&apikey=MSVURHNT6I166LY8&keywords=" + newText;
+                                    List<String> searchableSpinner_list = new ArrayList<String>();
+                                    RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+                                    JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                                        @Override
+                                        public void onResponse(JSONObject response) {
+                                            try {
+                                                JSONArray jsonArray = response.getJSONArray("bestMatches");
+                                                for (int i = 0; i < jsonArray.length(); i++) {
+                                                    JSONObject item = jsonArray.getJSONObject(i);
+                                                    String symbol = item.getString("1. symbol");
+                                                    searchableSpinner_list.add(symbol);
+                                                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, searchableSpinner_list);
 
-
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        handler.removeCallbacks(runnable);
-
-                        if (newText != null) {
-                            runnable = () -> {
-                                String url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&apikey=MSVURHNT6I166LY8&keywords=" + newText;
-                                List<String> searchablespinner_list = new ArrayList<String>();
-                                RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
-                                JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        try {
-                                            JSONArray jsonArray = response.getJSONArray("bestMatches");
-                                            for (int i = 0; i < jsonArray.length(); i++) {
-                                                JSONObject item = jsonArray.getJSONObject(i);
-                                                String symbol = item.getString("1. symbol");
-                                                searchablespinner_list.add(symbol);
-                                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, searchablespinner_list);
-
-                                                listView.setAdapter(adapter);
-                                                Log.i("result", symbol);
-                                                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                                    @Override
-                                                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                                        tv_stockSymbol.setText(String.valueOf(searchablespinner_list.get(position)));
-                                                        dialog.dismiss();
-                                                    }
-                                                });
+                                                    listView.setAdapter(adapter);
+                                                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                                        @Override
+                                                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                                            tv_stockSymbol.setText(String.valueOf(searchableSpinner_list.get(position)));
+                                                            dialog.dismiss();
+                                                        }
+                                                    });
+                                                }
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                                Log.i("result", "catch");
                                             }
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                            Log.i("result", "catch");
                                         }
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        error.printStackTrace();
-                                        Log.i("result", "err");
-                                    }
-                                });
-                                requestQueue.add(request);
-                            };
-                            handler.postDelayed(runnable, 1000);
-                        }
-
-
-                        return false;
-                    }
-                });
+                                    }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            error.printStackTrace();
+                                        }
+                                    });
+                                    requestQueue.add(request);
+                                }
+                            }
+                        });
                 dialog.show();
             }
         });

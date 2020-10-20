@@ -29,12 +29,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import android.util.Log;
 import android.view.View;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,6 +54,7 @@ public class ViewStockActivity extends AppCompatActivity {
     float total = 0;
     Map<String,Float> percentageList = new LinkedHashMap<>();
     List<String> allCategoryListByDES = new ArrayList<>();
+    DecimalFormat df_float = new DecimalFormat("#.0");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +68,7 @@ public class ViewStockActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(ViewStockActivity.this, AddStockActivity.class);
                 startActivity(intent);
+                ViewStockActivity.this.finish();
             }
         });
 
@@ -80,7 +84,6 @@ public class ViewStockActivity extends AppCompatActivity {
          DataBase.getInstance(ViewStockActivity.this).getDataUao().insertData("金融","V", 100,100,10000,"etoro");
          }).start();
          */
-
         new GetStockPrice().execute();
     }
 
@@ -97,123 +100,78 @@ public class ViewStockActivity extends AppCompatActivity {
         }
         @Override
         protected List<StockInfo> doInBackground(Void... voids) {
-
-
-            getCategoryPercentage();
-            List<StockData> Data = DataBase.getInstance(ViewStockActivity.this).getDataUao().displayAllByOrder();
             List<StockInfo> list = new ArrayList<>();
-            StringBuilder quote = new StringBuilder();
-            for (StockData nowData : Data) {
-                String nowName = nowData.getName();
-                quote.append(nowName).append(",");
-            }
-            quote.delete(quote.length()-1,quote.length());
+            List<StockData> Data = DataBase.getInstance(ViewStockActivity.this).getDataUao().displayAllByOrder();
+            if(!Data.isEmpty()){
+                getCategoryPercentage();
 
-            String url = "https://financialmodelingprep.com/api/v3/quote/" + quote.toString() + "?apikey=8ff27eca2701fd8bcbdfdd364ea9b75f";
-
-
-
-            RequestQueue requestQueue = Volley.newRequestQueue(ViewStockActivity.this);
-
-            RequestFuture<JSONArray> future = RequestFuture.newFuture();
-            JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, new JSONArray(), future, future);
-            requestQueue.add(request);
-
-                try {
-                    JSONArray response = future.get(30, TimeUnit.SECONDS);
-                    Map<String,String> stockPriceMap = getStockPrice(response);
-
-                    for (String nowCategory : allCategoryListByDES){
-                        List<StockData> categoryStockData = DataBase.getInstance(ViewStockActivity.this).getDataUao().findDataByCategory(nowCategory);
-                        for (StockData nowData : categoryStockData) {
-                            percentageList.get(nowData.getCategory());
-                            float nowPrice = Float.parseFloat(stockPriceMap.get(nowData.getName()));
-                            float profit = (nowData.getBuyPrice()-nowPrice)*nowData.getBuyShares();
-
-                            list.add(new StockInfo(nowData.getCategory()+"\n"+percentageList.get(nowData.getCategory())+" %",nowData.getName()
-                                    ,nowData.getBuyShares(),nowData.getBuyPrice(),String.valueOf(nowData.getBuyShares()*nowData.getBuyPrice()/total*100)+" %",
-                                    nowPrice,profit,String.valueOf(profit/nowData.getBuyPrice()*100)));
-                        }
-                    }
-
-
-
-
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                    // exception handling
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                StringBuilder quote = new StringBuilder();
+                for (StockData nowData : Data) {
+                    String nowName = nowData.getName();
+                    quote.append(nowName).append(",");
                 }
+                quote.delete(quote.length()-1,quote.length());
+
+                String url = "https://financialmodelingprep.com/api/v3/quote/" + quote.toString() + "?apikey=8ff27eca2701fd8bcbdfdd364ea9b75f";
 
 
-            /**
-            for (StockData nowData : Data) {
-
-
-                String NowStockName = nowData.getName();
-                String url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&apikey=MSVURHNT6I166LY8&symbol=" + NowStockName;
-                //https://financialmodelingprep.com/api/v3/quote/AAPL,FB,GOOG,ABT?apikey=8ff27eca2701fd8bcbdfdd364ea9b75f
 
                 RequestQueue requestQueue = Volley.newRequestQueue(ViewStockActivity.this);
 
-                RequestFuture<JSONObject> future = RequestFuture.newFuture();
-                JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, new JSONObject(), future, future);
+                RequestFuture<JSONArray> future = RequestFuture.newFuture();
+                JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, new JSONArray(), future, future);
                 requestQueue.add(request);
 
-                try {
-                    JSONObject response = future.get(30, TimeUnit.SECONDS);
-                    if (!(response.has("Global Quote"))){
-                        Log.i("NULL","NULL");
-                    }
-                    JSONObject Stock = response.getJSONObject("Global Quote");
-                    if (StockData.isEmpty()) {
-                        StockData.add(Stock.getString("07. latest trading day"));
-                    }
-                    StockData.add(Stock.getString("01. symbol"));
-                    StockData.add(Stock.getString("05. price"));
-                    percentageList.get(nowData.getCategory());
-                    float nowPrice = Float.parseFloat(Stock.getString("05. price"));
-                    float profit = (nowData.getBuyPrice()-nowPrice)*nowData.getBuyShares();
+                    try {
+                        JSONArray response = future.get(30, TimeUnit.SECONDS);
+                        Map<String,String> stockPriceMap = getStockPrice(response);
+                        for (String nowCategory : allCategoryListByDES){
+                            List<StockData> categoryStockData = DataBase.getInstance(ViewStockActivity.this).getDataUao().findDataByCategory(nowCategory);
+                            for (StockData nowData : categoryStockData) {
+                                percentageList.get(nowData.getCategory());
+                                float nowPrice = Float.parseFloat(stockPriceMap.get(nowData.getName()));
+                                float profit = (nowData.getBuyPrice()-nowPrice)*nowData.getBuyShares();
 
-                    list.add(new StockInfo(nowData.getCategory()+"\n"+percentageList.get(nowData.getCategory())+" %",nowData.getName()
-                            ,nowData.getBuyShares(),nowData.getBuyPrice(),String.valueOf(nowData.getBuyShares()*nowData.getBuyPrice()/total*100)+" %",
-                            nowPrice,profit,String.valueOf(profit/nowData.getBuyPrice()*100)));
-                    Log.i("sleep","sleep1");
-                    Thread.sleep(1000);
-                    Log.i("sleep","sleep2");
+                                list.add(new StockInfo(nowData.getCategory()+"\n"+df_float.format(percentageList.get(nowData.getCategory()))+" %",nowData.getName()
+                                        ,nowData.getBuyShares(),nowData.getBuyPrice(),String.valueOf(nowData.getBuyShares()*nowData.getBuyPrice()/total*100)+" %",
+                                        nowPrice,profit,String.valueOf(profit/nowData.getBuyPrice()*100)));
+                                Log.i("list",nowData.getName());
+                            }
+                        }
 
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                    // exception handling
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.i("NULL","NULL");
-                }
+
+
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        // exception handling
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
 
             }
-             */
             return list;
         }
         @Override
         protected void onPostExecute(List<StockInfo> Stock) {
             super.onPostExecute(Stock);
-            Column<String> categoryColumn = new Column<>("類別", "category");
-            Column<String> nameColumn = new Column<>("股名", "name");
-            Column<Float> sharesColumn = new Column<>("持有股數", "shares");
-            Column<Float> priceColumn = new Column<>("購買股價", "price");
-            Column<String> percentageColumn = new Column<>("持倉比率", "percentage");
-            Column<Float> nowPriceColumn = new Column<>("現價", "nowPrice");
-            Column<Float> PLPriceColumn = new Column<>("$", "PLPrice");
-            Column<String> PLPercentageColumn = new Column<>("%", "PLPercentage");
-            Column PLColumn = new Column("未實現損益",PLPriceColumn,PLPercentageColumn);
-            categoryColumn.setAutoMerge(true);
-            nameColumn.setFixed(true);
+                Column<String> categoryColumn = new Column<>("類別", "category");
+                Column<String> nameColumn = new Column<>("股名", "name");
+                Column<Float> sharesColumn = new Column<>("持有股數", "shares");
+                Column<Float> priceColumn = new Column<>("購買股價", "price");
+                Column<String> percentageColumn = new Column<>("持倉比率", "percentage");
+                Column<Float> nowPriceColumn = new Column<>("現價", "nowPrice");
+                Column<Float> PLPriceColumn = new Column<>("$", "PLPrice");
+                Column<String> PLPercentageColumn = new Column<>("%", "PLPercentage");
+                Column PLColumn = new Column("未實現損益", PLPriceColumn, PLPercentageColumn);
+                categoryColumn.setAutoMerge(true);
+                nameColumn.setFixed(true);
 
-            TableData tableData = new TableData<>("持股狀況",Stock,categoryColumn,nameColumn,sharesColumn,priceColumn,percentageColumn,nowPriceColumn,PLColumn);
-            table.setTableData(tableData);
+                TableData tableData = new TableData<>("持股狀況", Stock, categoryColumn, nameColumn, sharesColumn, priceColumn, percentageColumn, nowPriceColumn, PLColumn);
+                table.setTableData(tableData);
 
-            TableConfig();
-            table.setSortColumn(categoryColumn,false);
-            progressBar.dismiss();
+                TableConfig();
+                progressBar.dismiss();
 
         }
     }

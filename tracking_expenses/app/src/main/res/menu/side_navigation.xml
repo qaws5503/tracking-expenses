@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="類別"
+        android:id="@+id/side_nav1">
+    </item>
+    <item android:title="帳戶"
+        android:id="@+id/side_nav2">
+    </item>
+    <item android:title="股票"
+        android:id="@+id/side_nav3">
+    </item>
+</menu>

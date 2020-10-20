@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="清單"
+        android:id="@+id/main_bottom_nav1"
+        />
+    <item android:title="圖表"
+        android:id="@+id/main_bottom_nav2"
+        />
+    <item android:title="報表"
+        android:id="@+id/main_bottom_nav3"
+        />
+</menu>

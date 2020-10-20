@@ -65,5 +65,9 @@ public interface DataUao {
     @Query("DELETE FROM "+ tableName)
     void delete();
 
+    /***/
+    @Query("INSERT INTO accountCategory(category) VALUES(:category)")
+    void insertCategory(String category);
+
 }
 

@@ -56,6 +56,7 @@ public class AddStockActivity extends AppCompatActivity {
                     break;
                 case R.id.nav2:
                     fragment = new SellStockFragment();
+                    break;
             }
             return loadFragment(fragment);
         });

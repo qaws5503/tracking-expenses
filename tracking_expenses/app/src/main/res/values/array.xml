@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="stockCategory">
+        <item>科技</item>
+        <item>金融</item>
+        <item>傳統</item>
+    </string-array>
+    
+</resources>
