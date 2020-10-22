@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,13 +29,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.jakewharton.rxbinding4.widget.RxSearchView;
 import com.jimmy.tracking_expenses.StockDataBase.DataBase;
+import com.jimmy.tracking_expenses.StockDataBase.StockData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -59,6 +63,8 @@ public class BuyStockFragment extends Fragment {
     Handler handler = new Handler();
     TextView tv_stockSymbol;
     EditText ed_stockPrice,ed_stockShares;
+    List<String> allStockName = new ArrayList<>();
+    Map<String,String> map_StockToCategory = new LinkedHashMap<>();
 
     public BuyStockFragment() {
         // Required empty public constructor
@@ -89,6 +95,13 @@ public class BuyStockFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        new Thread(() -> {
+            List<StockData> AllData = DataBase.getInstance(getActivity()).getDataUao().displayAll();
+            for (StockData now:AllData){
+                allStockName.add(now.getName());
+                map_StockToCategory.put(now.getName(),now.getCategory());
+            }
+        }).start();
     }
 
     @Override
@@ -105,6 +118,7 @@ public class BuyStockFragment extends Fragment {
         Spinner spinner = v.findViewById(R.id.spinner);
         ArrayList arrayList = new ArrayList<String>();
 
+        arrayList.add("請選擇股票類別");
         arrayList.add("金融");
         arrayList.add("科技");
         arrayList.add("傳統");
@@ -112,6 +126,8 @@ public class BuyStockFragment extends Fragment {
         ArrayAdapter adapter = new  ArrayAdapter(getContext()
                 ,android.R.layout.simple_dropdown_item_1line,arrayList);
         spinner.setAdapter(adapter);
+
+
 
         bt_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,19 +139,48 @@ public class BuyStockFragment extends Fragment {
         bt_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Thread(()->{
-                    String category = spinner.getSelectedItem().toString();;
+                if (TextUtils.isEmpty(ed_stockPrice.getText().toString())){
+                    ed_stockPrice.setError("請填入股票價格");
+                }
+                else if (TextUtils.isEmpty(ed_stockShares.getText().toString())){
+                    ed_stockShares.setError("請填入股票數");
+                }
+                else {
+                    String category = spinner.getSelectedItem().toString();
                     String name = tv_stockSymbol.getText().toString();
                     String account = "";
-                    Log.i("ed",ed_stockPrice.getText().toString());
                     float buyPrice = Float.parseFloat(ed_stockPrice.getText().toString());
                     float buyShares = Float.parseFloat(ed_stockShares.getText().toString());
-                    float total = buyPrice*buyShares;
-                    DataBase.getInstance(getActivity()).getDataUao().insertData(category,name,buyShares,buyPrice,total,account);
-                    getActivity().finish();
-                    Intent intent = new Intent(getContext(),ViewStockActivity.class);
-                    startActivity(intent);
-                }).start();
+                    float total = buyPrice * buyShares;
+                    if (category.equals("請選擇股票類別")) {
+                        AlertDialog.Builder builder
+                                = new AlertDialog.Builder(getContext());
+                        builder.setTitle("錯誤");
+                        builder.setMessage("請選擇股票類別");
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    } else {
+                        new Thread(() -> {
+                            if (allStockName.contains(name)) {
+                                StockData oldData = DataBase.getInstance(getActivity()).getDataUao().findStockDataByName(name);
+                                float oldShares = oldData.getBuyShares();
+                                float oldTotal = oldData.getTotal();
+                                float allShares = oldShares + buyShares;
+                                float newTotal = oldTotal + total;
+                                float newPrice = (newTotal) / allShares;
+                                DataBase.getInstance(getActivity()).getDataUao().updateData(
+                                        oldData.getId(), oldData.getCategory(), oldData.getName(), allShares, newPrice, newTotal, oldData.getAccount());
+                            } else {
+                                DataBase.getInstance(getActivity()).getDataUao().insertData(category, name, buyShares, buyPrice, total, account);
+                            }
+
+                            getActivity().finish();
+                            Intent intent = new Intent(getContext(), ViewStockActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }).start();
+                    }
+                }
             }
         });
 
@@ -181,7 +226,15 @@ public class BuyStockFragment extends Fragment {
                                                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                                         @Override
                                                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                                            tv_stockSymbol.setText(String.valueOf(searchableSpinner_list.get(position)));
+                                                            String selectedStock = String.valueOf(searchableSpinner_list.get(position));
+                                                            tv_stockSymbol.setText(selectedStock);
+                                                            if (allStockName.contains(selectedStock)){
+                                                                Log.i("contain",selectedStock);
+                                                                Log.i("contain", map_StockToCategory.get(selectedStock));
+                                                                Log.i("contain", String.valueOf(adapter.getPosition("金融")));
+                                                                Log.i("contain", String.valueOf(arrayList.indexOf(map_StockToCategory.get(selectedStock))));
+                                                                spinner.setSelection(arrayList.indexOf(map_StockToCategory.get(selectedStock)));
+                                                            }
                                                             dialog.dismiss();
                                                         }
                                                     });

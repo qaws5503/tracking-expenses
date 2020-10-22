@@ -1,5 +1,6 @@
 package com.jimmy.tracking_expenses;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -29,8 +30,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,42 +53,40 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static java.lang.Math.round;
+
 public class ViewStockActivity extends AppCompatActivity {
     private SmartTable table;
     Map categoryList = new HashMap();
     float total = 0;
+    float stockCost = 0,marketValue = 0,PL = 0,ROI = 0;
     Map<String,Float> percentageList = new LinkedHashMap<>();
     List<String> allCategoryListByDES = new ArrayList<>();
-    DecimalFormat df_float = new DecimalFormat("#.0");
+    DecimalFormat df_float = new DecimalFormat("#.#");
+    DecimalFormat df_money = new DecimalFormat("#,###.##");
+    TextView tv_marketValue,tv_stockCost,tv_PL,tv_ROI;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_stock);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ViewStockActivity.this, AddStockActivity.class);
                 startActivity(intent);
-                ViewStockActivity.this.finish();
             }
         });
 
-
+        tv_marketValue = findViewById(R.id.textViewMarketValue);
+        tv_stockCost = findViewById(R.id.textViewStockCost);
+        tv_PL = findViewById(R.id.textViewPL);
+        tv_ROI = findViewById(R.id.textViewROI);
         table = findViewById(R.id.table);
         Stetho.initializeWithDefaults(this);
 
-        /**
-         new Thread(()->{
-         DataBase.getInstance(ViewStockActivity.this).getDataUao().insertData("科技","TSLA", 100,100,10000,"etoro");
-         DataBase.getInstance(ViewStockActivity.this).getDataUao().insertData("科技","AAPL", 100,100,10000,"etoro");
-         DataBase.getInstance(ViewStockActivity.this).getDataUao().insertData("傳統","T", 100,100,10000,"etoro");
-         DataBase.getInstance(ViewStockActivity.this).getDataUao().insertData("金融","V", 100,100,10000,"etoro");
-         }).start();
-         */
         new GetStockPrice().execute();
     }
 
@@ -130,15 +133,18 @@ public class ViewStockActivity extends AppCompatActivity {
                             for (StockData nowData : categoryStockData) {
                                 percentageList.get(nowData.getCategory());
                                 float nowPrice = Float.parseFloat(stockPriceMap.get(nowData.getName()));
-                                float profit = (nowData.getBuyPrice()-nowPrice)*nowData.getBuyShares();
+                                float profit = (float) (round(100*(nowPrice-nowData.getBuyPrice()))/100.0*nowData.getBuyShares());
+                                String a = df_money.format(10000);
+                                marketValue += nowPrice*nowData.getBuyShares();
+                                stockCost += nowData.getTotal();
 
                                 list.add(new StockInfo(nowData.getCategory()+"\n"+df_float.format(percentageList.get(nowData.getCategory()))+" %",nowData.getName()
-                                        ,nowData.getBuyShares(),nowData.getBuyPrice(),String.valueOf(nowData.getBuyShares()*nowData.getBuyPrice()/total*100)+" %",
-                                        nowPrice,profit,String.valueOf(profit/nowData.getBuyPrice()*100)));
-                                Log.i("list",nowData.getName());
+                                        ,df_money.format(nowData.getBuyShares()),df_money.format(nowData.getBuyPrice()), df_float.format(nowData.getBuyShares() * nowData.getBuyPrice() / total * 100) +" %",
+                                        df_money.format(nowPrice), df_money.format(profit), df_money.format(profit / nowData.getTotal() * 100)+" %"));
                             }
                         }
-
+                        PL = marketValue - stockCost;
+                        ROI = PL/stockCost*100;
 
 
                     } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -157,11 +163,11 @@ public class ViewStockActivity extends AppCompatActivity {
             super.onPostExecute(Stock);
                 Column<String> categoryColumn = new Column<>("類別", "category");
                 Column<String> nameColumn = new Column<>("股名", "name");
-                Column<Float> sharesColumn = new Column<>("持有股數", "shares");
-                Column<Float> priceColumn = new Column<>("購買股價", "price");
+                Column<String> sharesColumn = new Column<>("持有股數", "shares");
+                Column<String> priceColumn = new Column<>("購買股價", "price");
                 Column<String> percentageColumn = new Column<>("持倉比率", "percentage");
-                Column<Float> nowPriceColumn = new Column<>("現價", "nowPrice");
-                Column<Float> PLPriceColumn = new Column<>("$", "PLPrice");
+                Column<String> nowPriceColumn = new Column<>("現價", "nowPrice");
+                Column<String> PLPriceColumn = new Column<>("$", "PLPrice");
                 Column<String> PLPercentageColumn = new Column<>("%", "PLPercentage");
                 Column PLColumn = new Column("未實現損益", PLPriceColumn, PLPercentageColumn);
                 categoryColumn.setAutoMerge(true);
@@ -171,6 +177,9 @@ public class ViewStockActivity extends AppCompatActivity {
                 table.setTableData(tableData);
 
                 TableConfig();
+
+
+                setTextViewOnTop();
                 progressBar.dismiss();
 
         }
@@ -203,9 +212,20 @@ public class ViewStockActivity extends AppCompatActivity {
             @Override
             public int getTextColor(CellInfo cellInfo) {
                 if (cellInfo.col == 6 || cellInfo.col == 7){
-                    float value = Float.parseFloat(cellInfo.value);
+                    float value = 0;
+                    switch (cellInfo.col){
+                        case 6:
+                            value = Float.parseFloat(cellInfo.value.replace(",",""));
+                            break;
+                        case 7:
+                            value = Float.parseFloat(cellInfo.value.substring(0,cellInfo.value.length()-2));
+                            break;
+                    }
                     if(value <0) {
                         return ContextCompat.getColor(ViewStockActivity.this, R.color.colorRed);
+                    }
+                    else if (value>0){
+                        return ContextCompat.getColor(ViewStockActivity.this, R.color.colorGreen);
                     }
                 }
 
@@ -250,5 +270,24 @@ public class ViewStockActivity extends AppCompatActivity {
             allCategoryListByDES.add((String) e.getKey());
         }
 
+    }
+
+    public void setTextViewOnTop(){
+        tv_marketValue.setText(df_money.format(marketValue));
+        tv_stockCost.setText(df_money.format(stockCost));
+        setTextBackGround(tv_PL, df_money.format(PL), PL);
+        setTextBackGround(tv_ROI, df_money.format(ROI)+"%", ROI);
+
+    }
+
+    public void setTextBackGround(TextView textView, String string, float value){
+        Spannable spanna = new SpannableString(string);
+        if (value>0){
+            spanna.setSpan(new BackgroundColorSpan(0xffd50000),0, string.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        else if(value<0) {
+            spanna.setSpan(new BackgroundColorSpan(0xff00c853), 0, string.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        textView.setText(spanna);
     }
 }

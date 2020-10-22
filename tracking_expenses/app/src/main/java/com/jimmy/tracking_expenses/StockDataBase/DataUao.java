@@ -32,17 +32,21 @@ public interface DataUao {
     List<StockData> displayAllByOrder();
 
     /**撈取某個類別的相關資料*/
-    @Query("SELECT * FROM " + tableName +" WHERE category = :category ORDER BY total ASC, LOWER(name) ASC")
+    @Query("SELECT * FROM " + tableName +" WHERE category = :category ORDER BY total DESC, LOWER(name) ASC")
     List<StockData> findDataByCategory(String category);
 
     @Query("SELECT * FROM " + tableName +" WHERE id = :id")
-    List<StockData> findDataById(int id);
+    StockData findDataById(int id);
+
+
+    @Query("SELECT * FROM " + tableName +" WHERE name = :name")
+    StockData findStockDataByName(String name);
 
     @Query("SELECT DISTINCT category FROM " + tableName)
     List<String> findDistinctCategory();
 
     @Query("SELECT name FROM " + tableName)
-    String[] displayAllName();
+    List<String> displayAllStockName();
 
     /**=======================================================================================*/
     /**簡易更新資料的方法*/
@@ -50,8 +54,8 @@ public interface DataUao {
     void updateData(StockData myStockData);
 
     /**複雜(?)更新資料的方法*/
-    @Query("UPDATE "+tableName+" SET category = :category,name=:name,buyShares=:buyShares,buyPrice=:buyPrice,account=:account WHERE id = :id" )
-    void updateData(int id, String category, String name, float buyShares, float buyPrice, String account);
+    @Query("UPDATE "+tableName+" SET category = :category,name=:name,buyShares=:buyShares,buyPrice=:buyPrice,total=:total,account=:account WHERE id = :id" )
+    void updateData(int id, String category, String name, float buyShares, float buyPrice,float total, String account);
 
     /**=======================================================================================*/
     /**簡單刪除資料的方法*/
