@@ -16,13 +16,16 @@ public class ViewCategoryViewPagerFragmentAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        String message = "error";
         switch (position){
             case 0:
-                return AddCategoryFragment.newInstance("expensesFragment");
+                message = "expensesFragment";
+                break;
             case 1:
-                return AddCategoryFragment.newInstance("incomeFragment");
+                message = "incomeFragment";
+                break;
         }
-        return null;
+        return AddCategoryFragment.newInstance(message);
     }
 
 

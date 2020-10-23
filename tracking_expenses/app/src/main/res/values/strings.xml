@@ -13,6 +13,7 @@
     <string name="title_activity_view_stock">股票</string>
     <string name="title_activity_add_category">類別</string>
     <string name="title_activity_add_account">帳戶</string>
+    <string name="title_activity_add_stock">買/賣股票</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

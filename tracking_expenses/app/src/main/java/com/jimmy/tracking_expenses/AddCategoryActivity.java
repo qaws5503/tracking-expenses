@@ -22,12 +22,7 @@ public class AddCategoryActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.addCategoryToolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> finish());
         myAdapter = new ViewCategoryViewPagerFragmentAdapter(getSupportFragmentManager(), getLifecycle());
 
 

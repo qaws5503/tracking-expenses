@@ -71,12 +71,7 @@ public class ViewStockActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.viewStockToolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> finish());
 
 
         FloatingActionButton fab = findViewById(R.id.fab);

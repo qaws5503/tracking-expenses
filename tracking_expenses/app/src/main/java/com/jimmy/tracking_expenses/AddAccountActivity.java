@@ -22,12 +22,7 @@ public class AddAccountActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.addAccountToolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> finish());
 
 
         myViewPager2 = findViewById(R.id.addAccountViewPager);
