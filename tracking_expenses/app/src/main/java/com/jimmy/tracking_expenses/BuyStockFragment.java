@@ -30,6 +30,7 @@ import com.android.volley.toolbox.Volley;
 import com.jakewharton.rxbinding4.widget.RxSearchView;
 import com.jimmy.tracking_expenses.StockDataBase.DataBase;
 import com.jimmy.tracking_expenses.StockDataBase.StockData;
+import com.jimmy.tracking_expenses.StockDataBase.category;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,6 +66,7 @@ public class BuyStockFragment extends Fragment {
     EditText ed_stockPrice,ed_stockShares;
     List<String> allStockName = new ArrayList<>();
     Map<String,String> map_StockToCategory = new LinkedHashMap<>();
+    ArrayList stockCategoryList = new ArrayList<String>();
 
     public BuyStockFragment() {
         // Required empty public constructor
@@ -101,6 +103,11 @@ public class BuyStockFragment extends Fragment {
                 allStockName.add(now.getName());
                 map_StockToCategory.put(now.getName(),now.getCategory());
             }
+            List<category> category = DataBase.getInstance(getActivity()).getDataUao().getClassificationCategory("stock");
+            stockCategoryList.add("請選擇股票類別");
+            for (category now:category){
+                stockCategoryList.add(now.getCategoryName());
+            }
         }).start();
     }
 
@@ -116,15 +123,11 @@ public class BuyStockFragment extends Fragment {
         ed_stockShares = v.findViewById(R.id.editTextStockShares);
 
         Spinner spinner = v.findViewById(R.id.spinner);
-        ArrayList arrayList = new ArrayList<String>();
 
-        arrayList.add("請選擇股票類別");
-        arrayList.add("金融");
-        arrayList.add("科技");
-        arrayList.add("傳統");
+
 
         ArrayAdapter adapter = new  ArrayAdapter(getContext()
-                ,android.R.layout.simple_dropdown_item_1line,arrayList);
+                ,android.R.layout.simple_dropdown_item_1line,stockCategoryList);
         spinner.setAdapter(adapter);
 
 
@@ -232,8 +235,8 @@ public class BuyStockFragment extends Fragment {
                                                                 Log.i("contain",selectedStock);
                                                                 Log.i("contain", map_StockToCategory.get(selectedStock));
                                                                 Log.i("contain", String.valueOf(adapter.getPosition("金融")));
-                                                                Log.i("contain", String.valueOf(arrayList.indexOf(map_StockToCategory.get(selectedStock))));
-                                                                spinner.setSelection(arrayList.indexOf(map_StockToCategory.get(selectedStock)));
+                                                                Log.i("contain", String.valueOf(stockCategoryList.indexOf(map_StockToCategory.get(selectedStock))));
+                                                                spinner.setSelection(stockCategoryList.indexOf(map_StockToCategory.get(selectedStock)));
                                                             }
                                                             dialog.dismiss();
                                                         }

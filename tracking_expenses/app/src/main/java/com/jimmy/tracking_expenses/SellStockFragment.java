@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -137,46 +138,50 @@ public class SellStockFragment extends Fragment {
         bt_sell.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (selectedStock !=null){
-                    float newPrice = Float.parseFloat(ed_sellPrice.getText().toString());
-                    float newShares = Float.parseFloat(ed_sellShares.getText().toString());
-                    float newTotal = newPrice*newShares;
-                    float oldTotal = selectedStock.getTotal();
-                    float oldShares = selectedStock.getBuyShares();
-                    if (newShares == oldShares){
-                        new Thread(()->{
-                            DataBase.getInstance(getContext()).getDataUao().deleteData(selectedStock.getId());
-                        }).start();
+                if (TextUtils.isEmpty(ed_sellPrice.getText().toString())) {
+                    ed_sellPrice.setError("請填入賣出股票價格");
+                } else if (TextUtils.isEmpty(ed_sellShares.getText().toString())) {
+                    ed_sellShares.setError("請填入賣出股票數量");
+                }
+                else {
+                    if (selectedStock != null) {
+                        float newPrice = Float.parseFloat(ed_sellPrice.getText().toString());
+                        float newShares = Float.parseFloat(ed_sellShares.getText().toString());
+                        float newTotal = newPrice * newShares;
+                        float oldTotal = selectedStock.getTotal();
+                        float oldShares = selectedStock.getBuyShares();
+                        if (newShares == oldShares) {
+                            new Thread(() -> {
+                                DataBase.getInstance(getContext()).getDataUao().deleteData(selectedStock.getId());
+                            }).start();
+                        } else if (newShares > oldShares) {
+                            AlertDialog.Builder builder
+                                    = new AlertDialog.Builder(getContext());
+                            builder.setTitle("錯誤");
+                            builder.setMessage("欲賣出股票總數大於持有總數");
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        } else {
+                            new Thread(() -> {
 
-                    }
-                    else if (newShares > oldShares){
+                                DataBase.getInstance(getContext()).getDataUao().updateData(
+                                        selectedStock.getId(), selectedStock.getCategory(), selectedStock.getName(),
+                                        oldShares - newShares, selectedStock.getBuyPrice(), oldTotal - newTotal, selectedStock.getAccount());
+                            }).start();
+                        }
+
+                        getActivity().finish();
+                        Intent intent = new Intent(getContext(), ViewStockActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                    } else {
                         AlertDialog.Builder builder
                                 = new AlertDialog.Builder(getContext());
                         builder.setTitle("錯誤");
-                        builder.setMessage("欲賣出股票總數大於持有總數");
+                        builder.setMessage("選擇股票欄不得為空白");
                         AlertDialog dialog = builder.create();
                         dialog.show();
                     }
-                    else {
-                        new Thread(()->{
-
-                            DataBase.getInstance(getContext()).getDataUao().updateData(
-                                    selectedStock.getId(), selectedStock.getCategory(), selectedStock.getName(),
-                                    oldShares-newShares,selectedStock.getBuyPrice(),oldTotal-newTotal,selectedStock.getAccount());
-                        }).start();
-                        getActivity().finish();
-                        Intent intent = new Intent(getContext(),ViewStockActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                    }
-                }
-                else {
-                    AlertDialog.Builder builder
-                            = new AlertDialog.Builder(getContext());
-                    builder.setTitle("錯誤");
-                    builder.setMessage("選擇股票欄不得為空白");
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
                 }
             }
         });

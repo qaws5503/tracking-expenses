@@ -72,13 +72,16 @@ public class MainActivity extends AppCompatActivity {
         
         navigation_view.setNavigationItemSelectedListener((item) -> {
             drawerLayout.closeDrawer(GravityCompat.START);
+            Intent intent;
             switch (item.getItemId()){
                 case R.id.side_nav1:
+                    intent = new Intent(MainActivity.this, AddCategoryActivity.class);
+                    startActivity(intent);
                     break;
                 case R.id.side_nav2:
                     break;
                 case R.id.side_nav3:
-                    Intent intent = new Intent(MainActivity.this, ViewStockActivity.class);
+                    intent = new Intent(MainActivity.this, ViewStockActivity.class);
                     startActivity(intent);
                     break;
             }

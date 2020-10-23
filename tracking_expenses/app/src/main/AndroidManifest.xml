@@ -11,7 +11,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AddStockActivity"></activity>
+        <activity
+            android:name=".AddCategoryActivity"
+            android:label="@string/title_activity_add_category"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".AddStockActivity" />
         <activity
             android:name=".ViewStockActivity"
             android:label="@string/title_activity_view_stock"

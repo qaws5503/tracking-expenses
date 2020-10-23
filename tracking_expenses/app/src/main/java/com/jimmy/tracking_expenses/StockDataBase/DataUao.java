@@ -70,8 +70,23 @@ public interface DataUao {
     void delete();
 
     /***/
-    @Query("INSERT INTO accountCategory(category) VALUES(:category)")
-    void insertCategory(String category);
+    @Query("INSERT INTO category(categoryName, classification) VALUES(:categoryName, :classification)")
+    void insertCategory(String categoryName, String classification);
+
+    @Query("UPDATE category SET categoryName = :categoryName,classification = :classification WHERE id = :id")
+    void updateCategory(int id, String categoryName, String classification);
+
+    @Query("SELECT * FROM category WHERE classification = :classification")
+    List<category> getClassificationCategory(String classification);
+
+    @Query("INSERT INTO account(accountName, initialMoney) VALUES(:accountName, :initialMoney)")
+    void insertAccount(String accountName, float initialMoney);
+
+    @Query("UPDATE account SET accountName = :accountName,initialMoney = :initialMoney WHERE id = :id")
+    void updateAccount(int id, String accountName, float initialMoney);
+
+    @Query("SELECT * FROM account")
+    List<account> getAllAccount();
 
 }
 
