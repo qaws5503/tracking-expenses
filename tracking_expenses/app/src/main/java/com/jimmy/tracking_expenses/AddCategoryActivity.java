@@ -1,9 +1,11 @@
 package com.jimmy.tracking_expenses;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -17,7 +19,15 @@ public class AddCategoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_category);
         TabLayout tabs = findViewById(R.id.tabs);
         myViewPager2 = findViewById(R.id.viewPager);
-
+        Toolbar toolbar = findViewById(R.id.addCategoryToolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         myAdapter = new ViewCategoryViewPagerFragmentAdapter(getSupportFragmentManager(), getLifecycle());
 
 

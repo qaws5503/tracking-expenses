@@ -11,18 +11,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appbar"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent">
+            android:layout_width="match_parent"
+            android:theme="@style/AppTheme.AppBarOverlay">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/addAccountToolbar"
                 android:layout_height="?attr/actionBarSize"
                 android:layout_width="match_parent"
                 android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:title="帳戶"
-                app:titleTextColor="@color/white"/>
+                app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/addAccountTabs"

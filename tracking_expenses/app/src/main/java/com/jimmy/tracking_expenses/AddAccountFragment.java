@@ -110,7 +110,6 @@ public class AddAccountFragment extends Fragment {
             }
             getActivity().runOnUiThread(()-> myListAdapter.notifyDataSetChanged());
 
-            Log.i("Name", String.valueOf(arrayList));
         }).start();
 
 
