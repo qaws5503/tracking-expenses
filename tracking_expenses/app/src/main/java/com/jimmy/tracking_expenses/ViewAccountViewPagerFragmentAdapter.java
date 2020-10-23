@@ -14,6 +14,12 @@ public class ViewAccountViewPagerFragmentAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        switch (position){
+            case 0:
+                return AddAccountFragment.newInstance("assets");
+            case 1:
+                return AddAccountFragment.newInstance("liabilities");
+        }
         return null;
     }
 

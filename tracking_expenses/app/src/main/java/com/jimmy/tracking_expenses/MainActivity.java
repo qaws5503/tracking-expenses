@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                     break;
                 case R.id.side_nav2:
+                    intent = new Intent(MainActivity.this, AddAccountActivity.class);
+                    startActivity(intent);
                     break;
                 case R.id.side_nav3:
                     intent = new Intent(MainActivity.this, ViewStockActivity.class);

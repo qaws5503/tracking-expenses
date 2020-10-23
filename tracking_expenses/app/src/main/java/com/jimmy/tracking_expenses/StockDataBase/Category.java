@@ -5,7 +5,7 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "category")
-public class category {
+public class Category {
 
 
     @PrimaryKey(autoGenerate = true)
@@ -13,13 +13,13 @@ public class category {
     private String categoryName;
     private String classification;
 
-    public category(String categoryName, String classification) {
+    public Category(String categoryName, String classification) {
         this.categoryName = categoryName;
         this.classification = classification;
     }
 
     @Ignore
-    public category(int id, String categoryName, String classification) {
+    public Category(int id, String categoryName, String classification) {
         this.id = id;
         this.categoryName = categoryName;
         this.classification = classification;

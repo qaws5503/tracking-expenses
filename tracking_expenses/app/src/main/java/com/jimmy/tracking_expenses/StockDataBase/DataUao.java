@@ -70,23 +70,23 @@ public interface DataUao {
     void delete();
 
     /***/
-    @Query("INSERT INTO category(categoryName, classification) VALUES(:categoryName, :classification)")
+    @Query("INSERT INTO Category(categoryName, classification) VALUES(:categoryName, :classification)")
     void insertCategory(String categoryName, String classification);
 
-    @Query("UPDATE category SET categoryName = :categoryName,classification = :classification WHERE id = :id")
+    @Query("UPDATE Category SET categoryName = :categoryName,classification = :classification WHERE id = :id")
     void updateCategory(int id, String categoryName, String classification);
 
-    @Query("SELECT * FROM category WHERE classification = :classification")
-    List<category> getClassificationCategory(String classification);
+    @Query("SELECT * FROM Category WHERE classification = :classification")
+    List<Category> getClassificationCategory(String classification);
 
-    @Query("INSERT INTO account(accountName, initialMoney) VALUES(:accountName, :initialMoney)")
-    void insertAccount(String accountName, float initialMoney);
+    @Query("INSERT INTO Account(accountName, initialMoney, classification) VALUES(:accountName, :initialMoney, :classification)")
+    void insertAccount(String accountName, float initialMoney, String classification);
 
-    @Query("UPDATE account SET accountName = :accountName,initialMoney = :initialMoney WHERE id = :id")
-    void updateAccount(int id, String accountName, float initialMoney);
+    @Query("UPDATE Account SET accountName = :accountName,initialMoney = :initialMoney,classification = :classification WHERE id = :id")
+    void updateAccount(int id, String accountName, float initialMoney, String classification);
 
-    @Query("SELECT * FROM account")
-    List<account> getAllAccount();
+    @Query("SELECT * FROM Account WHERE classification = :classification")
+    List<Account> getClassificationAccount(String classification);
 
 }
 

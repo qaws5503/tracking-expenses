@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
-@Database(entities = {StockData.class,category.class,account.class},version = 1,exportSchema = true)
+@Database(entities = {StockData.class, Category.class, Account.class},version = 1,exportSchema = true)
 public abstract class DataBase extends RoomDatabase {
     public static final String DB_NAME = "RecordData.db";
     private static volatile DataBase instance;
@@ -23,7 +23,8 @@ public abstract class DataBase extends RoomDatabase {
 
     private static DataBase create(final Context context){
         String[] stockCategory = {"科技","金融","傳統"};
-        String[] account = {"現金","銀行","股票"};
+        String[] assets = {"現金","銀行","股票"};
+        String[] liabilities = {"信用卡","貸款"};
         return Room.databaseBuilder(context, DataBase.class,DB_NAME)
                 // prepopulate the database after onCreate was called
                 .addCallback(new Callback() {
@@ -34,8 +35,11 @@ public abstract class DataBase extends RoomDatabase {
                             for (String text :stockCategory) {
                                 getInstance(context).getDataUao().insertCategory(text, "stock");
                             }
-                            for (String text :account) {
-                                getInstance(context).getDataUao().insertAccount(text, (float) 0);
+                            for (String text :assets) {
+                                getInstance(context).getDataUao().insertAccount(text, (float) 0, "assets");
+                            }
+                            for (String text :liabilities) {
+                                getInstance(context).getDataUao().insertAccount(text, (float) 0, "liabilities");
                             }
                         }).start();
                     }

@@ -6,23 +6,26 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "account")
-public class account {
+public class Account {
     
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String accountName;
     private float initialMoney;
+    private String classification;
 
-    public account(String accountName, float initialMoney) {
+    public Account(String accountName, float initialMoney, String classification) {
         this.accountName = accountName;
         this.initialMoney = initialMoney;
+        this.classification = classification;
     }
     
     @Ignore
-    public account(int id, String accountName, float initialMoney) {
+    public Account(int id, String accountName, float initialMoney, String classification) {
         this.id = id;
         this.accountName = accountName;
         this.initialMoney = initialMoney;
+        this.classification = classification;
     }
 
     public int getId() {
@@ -47,5 +50,13 @@ public class account {
 
     public void setInitialMoney(float initialMoney) {
         this.initialMoney = initialMoney;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 }

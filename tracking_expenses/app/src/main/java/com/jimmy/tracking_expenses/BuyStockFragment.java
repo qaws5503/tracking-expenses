@@ -28,9 +28,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.jakewharton.rxbinding4.widget.RxSearchView;
+import com.jimmy.tracking_expenses.StockDataBase.Category;
 import com.jimmy.tracking_expenses.StockDataBase.DataBase;
 import com.jimmy.tracking_expenses.StockDataBase.StockData;
-import com.jimmy.tracking_expenses.StockDataBase.category;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -103,9 +103,9 @@ public class BuyStockFragment extends Fragment {
                 allStockName.add(now.getName());
                 map_StockToCategory.put(now.getName(),now.getCategory());
             }
-            List<category> category = DataBase.getInstance(getActivity()).getDataUao().getClassificationCategory("stock");
+            List<Category> category = DataBase.getInstance(getActivity()).getDataUao().getClassificationCategory("stock");
             stockCategoryList.add("請選擇股票類別");
-            for (category now:category){
+            for (Category now:category){
                 stockCategoryList.add(now.getCategoryName());
             }
         }).start();

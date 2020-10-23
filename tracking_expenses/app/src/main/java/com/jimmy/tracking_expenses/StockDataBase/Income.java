@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "income")
-public class income {
+public class Income {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
